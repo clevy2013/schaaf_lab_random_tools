@@ -11,7 +11,7 @@ band_list = [1, 2, 3, 4, 5, 6, 7]
 prod_list = ['bsa', 'geo', 'iso', 'nbar', 'qa', 'vol', 'wsa']
 
 # Set up complete dictionary of products
-hdf_dict = {}
+hdf_list = []
 for prod in prod_list:
     for band in band_list:
         for i in range(1, 367):
@@ -21,13 +21,16 @@ for prod in prod_list:
                 doy = '0' + str(i)
             else:
                 doy = str(i)
-            hdf_dict[prod + '_band' + str(band) + '_' + str(i)] = 'MCD43GF_' + prod + '_Band' + str(band) + \
-                                                                  '_' + doy + '_' + year + '_V006.hdf'
-print(hdf_dict)
+            hdf_list.append( 'MCD43GF_' + prod + '_Band' + str(band) + \
+                                                                  '_' + doy + '_' + year + '_V006.hdf')
+print(len(hdf_list))
 
 # Loop through each *.hdf file and make sure each band/product/year has every DOY accounted for, if not
 # spit it out in an errors file. This uses the ideal dictionary created above
 for hdf in os.listdir(wk_dir):
     if os.path.isfile(os.path.join(wk_dir, hdf)):
-        if hdf in hdf_dict.values():
+        if hdf in hdf_list:
             print(hdf)
+            hdf_list.remove(hdf)
+
+print(len(hdf_list))
