@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 from osgeo import gdal
 import os, glob, datetime
 
-os.chdir('/home/aelmes/Data/test/tif/')
+os.chdir('/muddy/data01/arthur.elmes/above/2017/mcd43/tif/mcd43a3/wsa')
 
 plt.ion()
 
 # Set up graph days and time axis
-doys = range(182, 213)
+doys = range(1, 365)
 #t_axis = np.array([datetime.datetime(2018, 7, i, 0) for i in range(1,doys)])
 
 #for year in range(2017, 2019):
@@ -29,9 +29,9 @@ alb_swir_mean = []
 alb_swir_sd = []
 
 for day in doys:
-    tif_list = glob.glob('MCD43A3.A2018%03d.h16v01.006.*_Albedo_BSA_shortwave.tif' % day)
+    tif_list = glob.glob('MCD43A3.2017%03d*wsa_shortwave.tif' % day)
     if len(tif_list) == 0:
-        print('File not found: MCD43A3.A2018%03d.h16v01.006.*_Albedo_BSA_shortwave.tif' % day)
+        print('File not found: MCD43A3.2017%03d*wsa_shortwave.tif' % day)
         pass
     else:
         tif = tif_list[0]
@@ -51,11 +51,11 @@ for day in doys:
 #plt.plot(doys, alb_swir_mean
 
 fig = plt.figure()
-fig.suptitle('Greenland Albedo Time Series')
+fig.suptitle('ABoVE Domain Albedo Time Series')
 ax = fig.add_subplot(111)
 fig.subplots_adjust(top=0.85)
 ax.set_title('Test Run')
-ax.set_xlabel('2018 Julian DOY')
-ax.set_ylabel('Black Sky Albedo')
+ax.set_xlabel('2017 Julian DOY')
+ax.set_ylabel('White Sky Albedo')
 ax.plot(doys, alb_swir_mean)
-plt.show()
+plt.savefig('/home/arthur.elmes/code/test.png')
