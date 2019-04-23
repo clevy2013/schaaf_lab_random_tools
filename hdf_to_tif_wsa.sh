@@ -1,7 +1,7 @@
 #!/bin/bash
 
-in_dir=$1 #"/muddy/data01/arthur.elmes/lance/MCD43A3/h12v04"
-out_dir=$2 #"/muddy/data01/arthur.elmes/lance/MCD43A3/h12v04/tif"
+in_dir=$1 
+out_dir=$2
 
 for hdf in $in_dir/*.hdf
 do
