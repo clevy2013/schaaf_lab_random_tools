@@ -1,0 +1,1 @@
+convert hdfs to tif for mcd43 years before 2015, and also do it for all vnpma and ia. Check that all the tiles downloaded for all the years, 2012 to 2019, including mcd43, vnp43ia, vnp43ma, and mod11a2
