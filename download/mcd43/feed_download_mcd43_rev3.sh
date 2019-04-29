@@ -4,9 +4,9 @@
 
 # Pass in the yyyy as arg1
 start_date=$1 #2014-01-01 #${1}-01-01
-end_date=$2 #2014-12-31 #$(date -I -d "$start_date+1 year")
-tile_id=$3
-product=$4
+end_date=$(date -I -d "$start_date+1 year")
+tile_id=$2
+product=$3
 
 cur_date=$start_date
 
@@ -36,7 +36,7 @@ while [[ "$cur_date" < "$end_date" ]]; do
     if [ ! -r $dl_dir ]; then
 	mkdir -p $dl_dir
     fi
-    bash ./download.sh $dl_url $dl_dir $tile_id
+    bash ./download_dec31.sh $dl_url $dl_dir $tile_id
 done
 # cur_date=$start_date
  

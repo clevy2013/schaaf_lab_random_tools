@@ -4,16 +4,20 @@
 
 # Pass in the yyyy as arg1
 start_date=$1 #2014-01-01 #${1}-01-01
-end_date=$2 #2014-12-31 #$(date -I -d "$start_date+1 year")
-tile_id=$3
+end_date=$(date -I -d "$start_date+1 year")
+tile_id=$2
 
 cur_date=$start_date
 
 url_base=https://e4ftl01.cr.usgs.gov/VIIRS/VNP43MA3
 vers=.001
 
-dl_dir=/muddy/data01/arthur.elmes/above/${start_date:0:4}/vnp43ma/${tile_id}
+base_dir=/muddy/data01/arthur.elmes/above/${start_date:0:4}/vnp43ma3/
+dl_dir=/muddy/data01/arthur.elmes/above/${start_date:0:4}/vnp43ma3/${tile_id
 
+if [ ! -d ${base_dir} ]; then
+    mkdir ${base_dir}
+fi
 if [ ! -d ${dl_dir} ]; then
     mkdir ${dl_dir}
 fi

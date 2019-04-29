@@ -12,7 +12,7 @@ echo "Start"
 for year in $(seq 2012 2019); do
     for line in $file_lines; do
 	echo  ${year}-01-01 ${year}-12-31 $line
-	./feed_download_vnp43ma3.sh ${year}-01-01 ${year}-12-31 $line
-	./feed_download_vnp43ia3.sh ${year}-01-01 ${year}-12-31 $line
+	./feed_download_vnp43ma3.sh ${year}-01-01 $line
+	./feed_download_vnp43ia3.sh ${year}-01-01 $line
     done
 done

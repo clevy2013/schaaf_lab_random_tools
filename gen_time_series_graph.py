@@ -28,6 +28,7 @@ sites_dict = {
     "HEAL" : (63.87569,-149.21334)
     }
 
+def main():
 
 in_dir = '/muddy/data01/arthur.elmes/above/2013/mcd43/h11v02/tif'
 fig_dir = '/muddy/data01/arthur.elmes/above/figs/'
@@ -51,7 +52,7 @@ out_proj = pyproj.Proj(template_raster.crs)
 x, y = pyproj.transform(in_proj, out_proj, lat_long[1], lat_long[0])
 smp_rc = template_raster.index(x, y)
 print("Querying pixel:" + str(smp_rc))
-      
+
 #center = raster.xy(raster.height // 2, raster.width // 2)
 
 
@@ -85,11 +86,11 @@ for day in doys:
         qa_raster = rasterio.open(qa_tif)
         wsa_band = wsa_raster.read(1)
         qa_band = qa_raster.read(1)   
-    
+        
         # Mask out nodata values
         wsa_swir_masked = np.ma.masked_array(wsa_band, wsa_band == 32767)
         wsa_swir_masked_qa = np.ma.masked_array(wsa_swir_masked, qa_band > 1)
-    
+        
         # Spatial subset based on coordinates of interest.
         wsa_swir_subset = wsa_swir_masked_qa[smp_rc]
         wsa_swir_subset_flt = np.multiply(wsa_swir_subset, 0.001)
@@ -98,7 +99,7 @@ for day in doys:
         #wsa_swir_mean.append(wsa_swir_masked.mean())
         #wsa_swir_sd.append(wsa_swir_masked.std())
         #print(wsa_swir_subset_flt)
-    #print(wsa_swir_subset_flt)
+        #print(wsa_swir_subset_flt)
     wsa_swir_mean.append(wsa_swir_subset_flt)
     
 
@@ -130,3 +131,5 @@ with open(csv_name, "w") as export_file:
         wr.writerow([day])
 
 
+if __name__ == "__main__":
+    main()
