@@ -31,15 +31,14 @@ sites_dict = {
     "BONA" : [(65.15401,-147.50258), "h11v02"],
     "BARR" : [(71.28241,-156.61936), "h12v01"],
     "TOOL" : [(68.66109,-149.37047), "h12v02"],
-    "HEAL" : [(63.87569,-149.21334), "h11v02"],
-    "CARI" : [(65.15306, -147.502), "h11v02"]
+    "HEAL" : [(63.87569,-149.21334), "h11v02"]
     }
 
 def main():
     for year in years:
         for site in sites_dict.items():
             #print(year, site)        
-            in_dir = '/muddy/data01/arthur.elmes/above/' + year + '/mcd43a/' + site[1][1] + '/tif'
+            in_dir = '/muddy/data01/arthur.elmes/above/' + year + '/vnp43ma3/' + site[1][1] + '/tif'
             fig_dir = '/muddy/data01/arthur.elmes/above/figs/'
             print(in_dir)
             os.chdir(in_dir)
@@ -57,7 +56,8 @@ def main():
             print(year)
             
             # Convert the lat/long point of interest to row/col
-            template_tif_list = glob.glob(os.path.join(in_dir,'wsa','MCD43A3.A{year}*wsa_shortwave.tif'.format(year=year)))
+            template_tif_list = glob.glob(os.path.join(in_dir,'wsa','VNP43MA3.A{year}*wsa_shortwave.tif'.format(year=year)))
+            print(template_tif_list[0])
             template_tif = template_tif_list[0]
             template_raster = rasterio.open(template_tif)
             in_proj = pyproj.Proj(init='epsg:4326')
@@ -66,25 +66,25 @@ def main():
             smp_rc = template_raster.index(x, y)
             print("Querying pixel:" + str(smp_rc))
             
+            #center = raster.xy(raster.height // 2, raster.width // 2)
+            
+            
             # Create empty arrays for mean, sd
             wsa_swir_mean = []
             wsa_swir_sd = []
-            bsa_swir_mean = []
-            bsa_swir_sd = []
             
             for day in doys:
                 # Open the shortwave white sky albedo band.
                 # The list approach is because of the processing date part of the file
                 # name, which necessitates the wildcard -- this was just the easiest way.
-                wsa_tif_list = glob.glob(os.path.join(in_dir,'wsa','MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year)))
-                bsa_tif_list = glob.glob(os.path.join(in_dir,'bsa','MCD43A3.A{year}{day:03d}*bsa_shortwave.tif'.format(day=day, year=year)))
-                qa_tif_list = glob.glob(os.path.join(in_dir,'qa','MCD43A3.A{year}{day:03d}*qa_shortwave.tif'.format(day=day, year=year)))
+                wsa_tif_list = glob.glob(os.path.join(in_dir,'wsa','VNP43MA3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year)))
+                bsa_tif_list = glob.glob(os.path.join(in_dir,'bsa','VNP43MA3.A{year}{day:03d}*bsa_shortwave.tif'.format(day=day, year=year)))
+                qa_tif_list = glob.glob(os.path.join(in_dir,'qa','VNP43MA3.A{year}{day:03d}*qa_shortwave.tif'.format(day=day, year=year)))
                 
                 # See if there is a raster for the date, if not use a fill value for the graph
                 if len(wsa_tif_list) == 0 or len(bsa_tif_list) == 0 or len(qa_tif_list) == 0:
                     #print('File not found: MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year))
                     wsa_swir_subset_flt = float('nan')
-                    bsa_swir_subset_flt = float('nan')
                 elif len(wsa_tif_list) > 1:
                     print('Multiple matching files found for same date!')
                     sys.exit()
@@ -96,31 +96,24 @@ def main():
                     
                 # Open tif as gdal ds but using rasterio for simplicity
                     wsa_raster = rasterio.open(wsa_tif)
-                    bsa_raster = rasterio.open(bsa_tif)
                     qa_raster = rasterio.open(qa_tif)
                     wsa_band = wsa_raster.read(1)
-                    bsa_band = bsa_raster.read(1)
                     qa_band = qa_raster.read(1)   
                     
                     # Mask out nodata values
                     wsa_swir_masked = np.ma.masked_array(wsa_band, wsa_band == 32767)
                     wsa_swir_masked_qa = np.ma.masked_array(wsa_swir_masked, qa_band > 1)
-                    bsa_swir_masked = np.ma.masked_array(bsa_band, bsa_band == 32767)
-                    bsa_swir_masked_qa = np.ma.masked_array(bsa_swir_masked, qa_band > 1)
                     
                     # Spatial subset based on coordinates of interest.
                     wsa_swir_subset = wsa_swir_masked_qa[smp_rc]
                     wsa_swir_subset_flt = np.multiply(wsa_swir_subset, 0.001)
-                    bsa_swir_subset = bsa_swir_masked_qa[smp_rc]
-                    bsa_swir_subset_flt = np.multiply(bsa_swir_subset, 0.001)
-                                        
+                    
                     # Calculate mean and std dev
                     #wsa_swir_mean.append(wsa_swir_masked.mean())
                     #wsa_swir_sd.append(wsa_swir_masked.std())
                     #print(wsa_swir_subset_flt)
                     #print(wsa_swir_subset_flt)
-                    bsa_swir_mean.append(bsa_swir_subset_flt)
-                    wsa_swir_mean.append(wsa_swir_subset_flt)
+                wsa_swir_mean.append(wsa_swir_subset_flt)
                 
             
             # Do plotting and save output
@@ -128,28 +121,26 @@ def main():
             #print(*wsa_swir_mean)
             series_name = location + " " + str(year)
             os.chdir(fig_dir)
-            # plt.ion()
-            # fig = plt.figure()
-            # fig.suptitle('ABoVE Domain Albedo Time Series')
-            # ax = fig.add_subplot(111)
-            # fig.subplots_adjust(top=0.85)
-            # ax.set_title(series_name)
-            # ax.set_xlabel('DOY')
-            # ax.set_ylabel('White Sky Albedo')
-            # plt.xlim(0, 365)
-            # plt.ylim(0.0, 1.0)
-            # ax.plot(doys, wsa_swir_mean)
-            # plt_name = str(year + '_' + series_name.replace(" ", ""))
-            # print('Saving plot to: ' + '{plt_name}.png'.format(plt_name=plt_name))
-            # plt.savefig('{plt_name}.png'.format(plt_name=plt_name))
-
-            out_list = list(zip(wsa_swir_mean, bsa_swir_mean))
+            plt.ion()
+            fig = plt.figure()
+            fig.suptitle('ABoVE Domain Albedo Time Series')
+            ax = fig.add_subplot(111)
+            fig.subplots_adjust(top=0.85)
+            ax.set_title(series_name)
+            ax.set_xlabel('DOY')
+            ax.set_ylabel('White Sky Albedo')
+            plt.xlim(0, 365)
+            plt.ylim(0.0, 1.0)
+            ax.plot(doys, wsa_swir_mean)
+            plt_name = str(year + '_' + series_name.replace(" ", ""))
+            print('Saving plot to: ' + '{plt_name}.png'.format(plt_name=plt_name))
+            plt.savefig('{plt_name}.png'.format(plt_name=plt_name))
             
             csv_name = str(series_name + ".csv")
             # export data to csv
             with open(csv_name, "w") as export_file:
                 wr = csv.writer(export_file, dialect='excel', lineterminator='\n')
-                for day in out_list:
+                for day in wsa_swir_mean:
                     wr.writerow([day])
 
 
