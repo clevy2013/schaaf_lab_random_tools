@@ -15,9 +15,9 @@ if [ ! -d ${out_dir}/wsa/ ]; then
     mkdir ${out_dir}/wsa/
 fi
 
-#if [ ! -d ${out_dir}/bsa/ ]; then
-#    mkdir ${out_dir}/bsa/
-#fi
+if [ ! -d ${out_dir}/bsa/ ]; then
+    mkdir ${out_dir}/bsa/
+fi
 
 for hdf in $in_dir/*.hdf
 do
@@ -34,6 +34,6 @@ do
     # gdal_translate -of GTiff HDF4_EOS:EOS_GRID:'"'${in_dir}/${filename}'"':MODIS_Grid_500m_2D:sur_refl_b07_1 ${out_dir}/${filename_bare}_sr_b7.tif
     # gdal_translate -of GTiff HDF4_EOS:EOS_GRID:'"'${in_dir}/${filename}'"':MODIS_Grid_500m_2D:QC_500m_1 ${out_dir}/${filename_bare}_sr_qc.tif
     gdal_translate -of GTiff HDF4_EOS:EOS_GRID:'"'${in_dir}/${filename}'"':MOD_Grid_BRDF:Albedo_WSA_shortwave ${out_dir}/wsa/${filename_bare}_wsa_shortwave.tif
-    #gdal_translate -of GTiff HDF4_EOS:EOS_GRID:'"'${in_dir}/${filename}'"':MOD_Grid_BRDF:Albedo_BSA_shortwave ${out_dir}/bsa/${filename_bare}_bsa_shortwave.tif
+    gdal_translate -of GTiff HDF4_EOS:EOS_GRID:'"'${in_dir}/${filename}'"':MOD_Grid_BRDF:Albedo_BSA_shortwave ${out_dir}/bsa/${filename_bare}_bsa_shortwave.tif
     gdal_translate -of GTiff HDF4_EOS:EOS_GRID:'"'${in_dir}/${filename}'"':MOD_Grid_BRDF:BRDF_Albedo_Band_Mandatory_Quality_shortwave ${out_dir}/qa/${filename_bare}_qa_shortwave.tif
 done
