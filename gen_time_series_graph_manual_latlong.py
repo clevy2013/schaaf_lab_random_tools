@@ -28,46 +28,79 @@ smpl3:  65.979228, -154.049494
 smpl4:  65.920039, -154.040912 
 
 """
-
+import os, glob, sys, rasterio, pyproj, csv, statistics
 import numpy as np
 import matplotlib.pyplot as plt
-import os, glob, datetime, sys, rasterio, pyproj, csv
 
-years = [ "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019" ]
+#years = [ "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019" ]
+years = [ "2019" ]
+tile = "h16v02"
 
-tile = "h11v02"
+smpls = [
+    (68.507656, -50.150823, "TEST_SITE" )
+]
+
+# smpls = [
+#     (66.1315, -154.075),
+#     (66.0730, -154.095),
+#     (65.9296, -154.133),
+#     (66.1172, -154.067),
+#     (65.9081, -154.341),
+#     (66.0035, -153.949),
+#     (66.1426, -154.079),
+#     (66.1481, -153.987),
+#     (65.8766, -154.105),
+#     (66.0790, -154.079),
+#     (66.0286, -153.899),
+#     (65.9378, -154.223),
+#     (66.1302, -153.988),
+#     (66.1606, -154.082),
+#     (66.1944, -153.809),
+#     (66.0096, -153.935),
+#     (66.1844, -153.954),
+#     (65.9618, -154.24),
+#     (65.9212, -153.989),
+#     (66.0687, -154.167),
+#     (65.8910, -153.839),
+#     (65.9911, -154.018),
+#     (66.2005, -153.853),
+#     (66.0121, -153.985),
+#     (65.9642, -154.003),
+#     (65.8940, -153.781),
+#     (65.9606, -154.275),
+#     (66.1743, -153.979),
+#     (66.1872, -153.924),
+#     (66.0036, -154.137)
+#     ]
+
+def convertLL(lat, lon, in_dir):
+    # Convert the lat/long point of interest to a row/col location
+    template_tif_list = glob.glob(os.path.join(in_dir, 'MCD43A3.A*{tile}*wsa_shortwave.tif'.format(tile=tile)))
+    template_tif = template_tif_list[0]
+    template_raster = rasterio.open(template_tif)
+    in_proj = pyproj.Proj(init='epsg:4326')
+    out_proj = pyproj.Proj(template_raster.crs)
+    x, y = pyproj.transform(in_proj, out_proj, lon, lat)
+    smp_rc = template_raster.index(x, y)
+    #print('Querying pixel:' + str(smp_rc))
+    return smp_rc
 
 def main():
     for year in years:
-        print("processing" + str(year))        
-        in_dir = '/muddy/data01/arthur.elmes/above/' + year + '/mcd43a/' + tile + '/tif'
-        fig_dir = '/muddy/data01/arthur.elmes/above/figs/'
-        print(in_dir)
+        print("Processing " + str(year))        
+        in_dir =  os.path.join('/media/arthur/Windows/LinuxShare/greenland/albedo/mcd43_ops/', year, tile)
+        fig_dir = '/media/arthur/Windows/LinuxShare/greenland/figs/'
+        
         os.chdir(in_dir)
         
         # Set up graph days and time axis
         doys = range(1, 366)
-        year = in_dir.split('/')[-4]
 
-        # Set up the pixel location manually
+        # Set up the pixel location manually FOR NOW
         #location = "Anaktuvuk River Fire"
-        #lat_long = (69.120186, -150.606787)
-        location = "Rock_Fire_Smp4"
-        lat_long = (65.920039, -154.040912)
+        location = "TEST_SITE"
+        #TODO change this so it reads the name from the lat long list, in index [i][2], e.g. smpls[i][2]
 
-        
-        # Convert the lat/long point of interest to a row/col location
-        template_tif_list = glob.glob(os.path.join(in_dir, 'wsa', 'MCD43A3.A{year}*wsa_shortwave.tif'.format(year=year)))
-        template_tif = template_tif_list[0]
-        template_raster = rasterio.open(template_tif)
-        in_proj = pyproj.Proj(init='epsg:4326')
-        out_proj = pyproj.Proj(template_raster.crs)
-        x, y = pyproj.transform(in_proj, out_proj, lat_long[1], lat_long[0])
-        smp_rc = template_raster.index(x, y)
-        print('Querying pixel:' + str(smp_rc))
-        
-        #center = raster.xy(raster.height // 2, raster.width // 2)
-                
         # Create empty arrays for mean, sd
         wsa_swir_mean = []
         wsa_swir_sd = []
@@ -76,9 +109,9 @@ def main():
             # Open the shortwave white sky albedo band.
             # The list approach is because of the processing date part of the file
             # name, which necessitates the wildcard -- this was just the easiest way.
-            wsa_tif_list = glob.glob(os.path.join(in_dir,'wsa','MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year)))
-            bsa_tif_list = glob.glob(os.path.join(in_dir,'bsa','MCD43A3.A{year}{day:03d}*bsa_shortwave.tif'.format(day=day, year=year)))
-            qa_tif_list = glob.glob(os.path.join(in_dir,'qa','MCD43A3.A{year}{day:03d}*qa_shortwave.tif'.format(day=day, year=year)))
+            wsa_tif_list = glob.glob(os.path.join(in_dir, 'wsa', 'MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year)))
+            bsa_tif_list = glob.glob(os.path.join(in_dir, 'bsa', 'MCD43A3.A{year}{day:03d}*bsa_shortwave.tif'.format(day=day, year=year)))
+            qa_tif_list = glob.glob(os.path.join(in_dir, 'qa', 'MCD43A3.A{year}{day:03d}*qa_shortwave.tif'.format(day=day, year=year)))
             
             # See if there is a raster for the date, if not use a fill value for the graph
             if len(wsa_tif_list) == 0 or len(bsa_tif_list) == 0 or len(qa_tif_list) == 0:
@@ -90,30 +123,36 @@ def main():
             else:
                 #print('Found file: ' + ' MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year))
                 wsa_tif = wsa_tif_list[0]
-                bsa_tif = bsa_tif_list[0]
+                #bsa_tif = bsa_tif_list[0]
                 qa_tif = qa_tif_list[0]
                     
                 # Open tif as gdal ds but using rasterio for simplicity
                 wsa_raster = rasterio.open(wsa_tif)
                 qa_raster = rasterio.open(qa_tif)
                 wsa_band = wsa_raster.read(1)
-                qa_band = qa_raster.read(1)   
+                qa_band = qa_raster.read(1)
                 
                 # Mask out nodata values
                 wsa_swir_masked = np.ma.masked_array(wsa_band, wsa_band == 32767)
                 wsa_swir_masked_qa = np.ma.masked_array(wsa_swir_masked, qa_band > 1)
                 
                 # Spatial subset based on coordinates of interest.
-                wsa_swir_subset = wsa_swir_masked_qa[smp_rc]
-                wsa_swir_subset_flt = np.multiply(wsa_swir_subset, 0.001)
-                
-                # Calculate mean and std dev
-                #wsa_swir_mean.append(wsa_swir_masked_flt.mean())
-                #wsa_swir_sd.append(wsa_swir_masked_flt.std())
-                #print(wsa_swir_subset_flt)
-                #print(wsa_swir_subset_flt)
-                wsa_swir_mean.append(wsa_swir_subset_flt)
-                
+                smpl_results = []
+                #tmp_mean = None
+                for smpl in smpls:
+                    smp_rc = convertLL(smpl[0], smpl[1], os.path.join(in_dir, 'wsa'))
+                    #print(smp_rc)
+                    wsa_swir_subset = wsa_swir_masked_qa[smp_rc]
+                    wsa_swir_subset_flt = np.multiply(wsa_swir_subset, 0.001)
+
+                    # Add each point to the temporary list
+                    smpl_results.append(wsa_swir_subset_flt)
+                try:
+                    tmp_mean = statistics.mean(smpl_results)
+                    #print(tmp_mean)
+                    wsa_swir_mean.append(tmp_mean)
+                except:
+                    wsa_swir_mean.append(0.0)
             
         # Do plotting and save output
         #print(*doys)
