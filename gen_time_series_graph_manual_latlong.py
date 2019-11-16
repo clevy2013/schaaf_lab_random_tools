@@ -34,10 +34,11 @@ import matplotlib.pyplot as plt
 
 #years = [ "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019" ]
 years = [ "2019" ]
-tile = "h16v02"
+tile = "h16v01"
 
 smpls = [
-    (68.507656, -50.150823, "TEST_SITE" )
+    #(68.507656, -50.150823, "TEST_SITE"),
+    (72.57972, -38.50454, "Summit")
 ]
 
 # smpls = [
@@ -88,8 +89,8 @@ def convertLL(lat, lon, in_dir):
 def main():
     for year in years:
         print("Processing " + str(year))        
-        in_dir =  os.path.join('/media/arthur/Windows/LinuxShare/greenland/albedo/mcd43_ops/', year, tile)
-        fig_dir = '/media/arthur/Windows/LinuxShare/greenland/figs/'
+        in_dir =  os.path.join('/muddy/data02/arthur.elmes/greenland/', year, tile)
+        fig_dir = '/muddy/data02/arthur.elmes/greenland/figs/'
         
         os.chdir(in_dir)
         
