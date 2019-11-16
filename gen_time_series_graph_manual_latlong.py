@@ -35,48 +35,30 @@ import matplotlib.pyplot as plt
 #years = [ "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019" ]
 years = [ "2019" ]
 tile = "h16v01"
-
+prdct = "MCD43A3"
+base_dir = '/muddy/data02/arthur.elmes/greenland/'
 smpls = [
     #(68.507656, -50.150823, "TEST_SITE"),
     (72.57972, -38.50454, "Summit")
 ]
 
-# smpls = [
-#     (66.1315, -154.075),
-#     (66.0730, -154.095),
-#     (65.9296, -154.133),
-#     (66.1172, -154.067),
-#     (65.9081, -154.341),
-#     (66.0035, -153.949),
-#     (66.1426, -154.079),
-#     (66.1481, -153.987),
-#     (65.8766, -154.105),
-#     (66.0790, -154.079),
-#     (66.0286, -153.899),
-#     (65.9378, -154.223),
-#     (66.1302, -153.988),
-#     (66.1606, -154.082),
-#     (66.1944, -153.809),
-#     (66.0096, -153.935),
-#     (66.1844, -153.954),
-#     (65.9618, -154.24),
-#     (65.9212, -153.989),
-#     (66.0687, -154.167),
-#     (65.8910, -153.839),
-#     (65.9911, -154.018),
-#     (66.2005, -153.853),
-#     (66.0121, -153.985),
-#     (65.9642, -154.003),
-#     (65.8940, -153.781),
-#     (65.9606, -154.275),
-#     (66.1743, -153.979),
-#     (66.1872, -153.924),
-#     (66.0036, -154.137)
-#     ]
+sites_dict = {
+        "Summit" : [(72.57972, -38.50454), "h16v01"]
+        }
+
+# sites_dict = {
+#         "DEJU" : [(63.88112, -145.75136), "h11v02"],
+#         "BONA" : [(65.15401,-147.50258), "h11v02"],
+#         "BARR" : [(71.28241,-156.61936), "h12v01"],
+#         "TOOL" : [(68.66109,-149.37047), "h12v02"],
+#         "HEAL" : [(63.87569,-149.21334), "h11v02"],
+#         "CARI" : [(65.15306, -147.502), "h11v02"]
+#         }
+
 
 def convertLL(lat, lon, in_dir):
     # Convert the lat/long point of interest to a row/col location
-    template_tif_list = glob.glob(os.path.join(in_dir, 'MCD43A3.A*{tile}*wsa_shortwave.tif'.format(tile=tile)))
+    template_tif_list = glob.glob(os.path.join(in_dir, '{prdct}.A*{tile}*wsa_shortwave.tif'.format(prdct=prdct, tile=tile)))
     template_tif = template_tif_list[0]
     template_raster = rasterio.open(template_tif)
     in_proj = pyproj.Proj(init='epsg:4326')
@@ -89,8 +71,8 @@ def convertLL(lat, lon, in_dir):
 def main():
     for year in years:
         print("Processing " + str(year))        
-        in_dir =  os.path.join('/muddy/data02/arthur.elmes/greenland/', year, tile)
-        fig_dir = '/muddy/data02/arthur.elmes/greenland/figs/'
+        in_dir =  os.path.join(base_dir, prdct, 'tif', year, tile)
+        fig_dir = os.path.join(base_dir, 'figs')
         
         os.chdir(in_dir)
         
