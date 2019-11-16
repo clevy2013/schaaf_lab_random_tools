@@ -36,7 +36,7 @@ import matplotlib.pyplot as plt
 years = [ "2019" ]
 tile = "h16v01"
 prdct = "MCD43A3"
-base_dir = '/muddy/data02/arthur.elmes/greenland/'
+base_dir = '/home/arthur/Dropbox/greenland/'
 smpls = [
     #(68.507656, -50.150823, "TEST_SITE"),
     (72.57972, -38.50454, "Summit")
@@ -80,7 +80,6 @@ def main():
         doys = range(1, 366)
 
         # Set up the pixel location manually FOR NOW
-        #location = "Anaktuvuk River Fire"
         location = "TEST_SITE"
         #TODO change this so it reads the name from the lat long list, in index [i][2], e.g. smpls[i][2]
 
@@ -95,7 +94,6 @@ def main():
             wsa_tif_list = glob.glob(os.path.join(in_dir, 'wsa', 'MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year)))
             bsa_tif_list = glob.glob(os.path.join(in_dir, 'bsa', 'MCD43A3.A{year}{day:03d}*bsa_shortwave.tif'.format(day=day, year=year)))
             qa_tif_list = glob.glob(os.path.join(in_dir, 'qa', 'MCD43A3.A{year}{day:03d}*qa_shortwave.tif'.format(day=day, year=year)))
-            
             # See if there is a raster for the date, if not use a fill value for the graph
             if len(wsa_tif_list) == 0 or len(bsa_tif_list) == 0 or len(qa_tif_list) == 0:
                 #print('File not found: MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year))
@@ -104,7 +102,7 @@ def main():
                 print('Multiple matching files found for same date!')
                 sys.exit()
             else:
-                #print('Found file: ' + ' MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year))
+                print('Found file: ' + ' MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year))
                 wsa_tif = wsa_tif_list[0]
                 #bsa_tif = bsa_tif_list[0]
                 qa_tif = qa_tif_list[0]
