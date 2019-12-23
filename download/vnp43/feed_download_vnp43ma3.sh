@@ -4,16 +4,16 @@
 
 # Pass in the yyyy as arg1
 start_date=$1 #2014-01-01 #${1}-01-01
-end_date=$(date -I -d "$start_date+1 year")
-tile_id=$2
+end_date=$2 #$(date -I -d "$start_date+1 year")
+tile_id=$3
 
 cur_date=$start_date
 
 url_base=https://e4ftl01.cr.usgs.gov/VIIRS/VNP43MA3
 vers=.001
 
-base_dir=/muddy/data01/arthur.elmes/above/${start_date:0:4}/vnp43ma3/
-dl_dir=/muddy/data01/arthur.elmes/above/${start_date:0:4}/vnp43ma3/${tile_id}
+base_dir=/muddy/data01/arthur.elmes/VNP43MA3/${start_date:0:4}/
+dl_dir=/muddy/data01/arthur.elmes/VNP43MA3/${start_date:0:4}/${tile_id}
 
 if [ ! -d ${base_dir} ]; then
     mkdir ${base_dir}
@@ -37,6 +37,7 @@ while [[ "$cur_date" < "$end_date" ]]; do
     if [ ! -r $dl_dir ]; then
 	mkdir -p $dl_dir
     fi
+    echo "Downloading " $dl_url $dl_dir $tile_id
     bash ./download.sh $dl_url $dl_dir $tile_id
 done
 # cur_date=$start_date

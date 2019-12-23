@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Wed Sep 19 10:04:10 2018
 @author: aelmes
@@ -28,19 +26,33 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #years = [ "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019" ]
-years = [ "2019" ]
-tile = "h16v01"
-prdct = "VNP43MA3"
-base_dir = '/muddy/data02/arthur.elmes/greenland/'
-# smpls = [
-#     #(68.507656, -50.150823, "TEST_SITE"),
-#     (72.57972, -38.50454, "Summit")
-#]
+years = [ "2018", "2019" ]
+#tile = "h12v04"
+prdct = "MCD43A3"
+base_dir = '/penobscot/data06/arthur.elmes/'
 
 sites_dict = {
-        "Summit" : [(72.57972, -38.50454), "h16v01"]
-        }
+    #"HF" : [(42.53691, -72.17265), "h12v04"]
+    "Summit" : [(72.57972, -38.50454), "h16v01"],
+    #"NASA-U" : [(73.84189, -49.49831), "h16v01"],
+    #"GITS":  [(77.13781, -61.04113), "h16v01"],
+    #"Humboldt" : [(78.5266, -56.8305), "h16v01"],
+    #"CP2" : [(69.87968, -46.98692), "h16v01"],
+    #"South_Dome" : [(63.14889, -44.81717), "h16v02"],
+    #"DYE-2" : [(66.48001, -46.27889), "h16v02"],
+    #"Saddle" : [(65.99947, -44.50016), "h16v02"],
+    #"NASA-SE" : [(66.4797, -42.5002), "h16v02"],
+    #"Swiss_Camp" : [(69.56833, -49.31582), "h16v02"],
+    #"JAR" : [(69.498358, -49.68156), "h16v02"],
+    #"JAR_2" : [(69.42, -50.0575), "h16v02"],
+    #"KAR" : [(69.69942, -33.00058), "h16v02"],
+    #"NASA-E" : [(75, -29.99972), "h17v01"],
+    #"NGRIP" : [(75.09975, -42.3325), "h17v01"],
+    #"TUNU-N" : [(78.01677, -33.99387), "h17v01"]
+}
 
+#"Crawford_Pt" : [(69.87975, -46.98667), "h16v01"],
+    
 # sites_dict = {
 #         "DEJU" : [(63.88112, -145.75136), "h11v02"],
 #         "BONA" : [(65.15401,-147.50258), "h11v02"],
@@ -50,16 +62,17 @@ sites_dict = {
 #         "CARI" : [(65.15306, -147.502), "h11v02"]
 #         }
 
-def convert_ll(lat, lon, in_dir):
+def convert_ll(lat, lon, tile, in_dir):
     # Convert the lat/long point of interest to a row/col location
     template_tif_list = glob.glob(os.path.join(in_dir, '{prdct}.A*{tile}*wsa_shortwave.tif'.format(prdct=prdct, tile=tile)))
     template_tif = template_tif_list[0]
     template_raster = rasterio.open(template_tif)
     in_proj = pyproj.Proj(init='epsg:4326')
     out_proj = pyproj.Proj(template_raster.crs)
+    print("longitude: " + str(lon) + " latitude:" + str(lat))
     x, y = pyproj.transform(in_proj, out_proj, lon, lat)
     smp_rc = template_raster.index(x, y)
-    #print('Querying pixel:' + str(smp_rc))
+    print('Querying pixel:' + str(smp_rc))
     return smp_rc
 
 def draw_plot():
@@ -92,6 +105,7 @@ def main():
 
             # Set up the pixel location manually FOR NOW
             location = str(site[0])
+            print(site)
             lat_long = (site[1][0][0], site[1][0][1])
             print(lat_long)
             
@@ -122,6 +136,7 @@ def main():
                 if len(wsa_tif_list) == 0 or len(bsa_tif_list) == 0 or len(qa_tif_list) == 0:
                     #print('File not found: MCD43A3.A{year}{day:03d}*wsa_shortwave.tif'.format(day=day, year=year))
                     wsa_swir_subset_flt = float('nan')
+                    bsa_swir_subset_flt = float('nan')
                 elif len(wsa_tif_list) > 1:
                     print('Multiple matching files found for same date!')
                     sys.exit()
@@ -153,7 +168,7 @@ def main():
                     #several locations to get one mean value, rather than get the value of a given
                     #tower's pixel. Maybe modifiy to average within a bounding box or something?
                     #for smpl in sites_dict.values():
-                    smp_rc = convert_ll(site[1][0][0], site[1][0][1], os.path.join(in_dir, 'wsa'))
+                    smp_rc = convert_ll(site[1][0][0], site[1][0][1], site[1][1], os.path.join(in_dir, 'wsa'))
                     print("Sample row/col: " + str(smp_rc))
                     print("Directory: " + os.path.join(in_dir, 'wsa'))
                     wsa_swir_subset = wsa_swir_masked_qa[smp_rc]
@@ -186,10 +201,10 @@ def main():
         #print(*wsa_swir_mean)
         series_name = location + "_" + str(year)
         os.chdir(fig_dir)
-        print("writing csv: " + str(series_name + ".csv"))
         csv_name = str(series_name + "_" + prdct + ".csv")
+        print("writing csv: " + csv_name)
         # export data to csv
-        cmb_smpl_results_df.to_csv(csv_name, sep='\t', index=False)
+        cmb_smpl_results_df.to_csv(csv_name, index=False)
         # with open(csv_name, "w") as export_file:
         #     wr = csv.writer(export_file, dialect='excel', lineterminator='\n')
         #     for index, row in cmb_smpl_results_df.iterrows():
