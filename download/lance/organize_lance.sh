@@ -31,7 +31,7 @@ done
 # organize MCD43A4
 for tile in "${tiles[@]}"
 do
-    rsync -av --remove-source-files $a4_dir/$tile/allData/6/MCD43A1N/Recent/ $a4_dir/$tile/
+    rsync -av --remove-source-files $a4_dir/$tile/allData/6/MCD43A4N/Recent/ $a4_dir/$tile/
 done
 
 # organize MOD09GA
