@@ -8,14 +8,22 @@ import numpy as np
 #import pandas as pd
 #import rasterio as rio
 from pyhdf.SD import SD, SDC
-import h5py
+from h5py import File
 
 matplotlib.rcParams['agg.path.chunksize'] = 100000
 
 ## h12v04 UL: -6671703.1179999997839332 5559752.5983330002054572 LR: -5559752.5983330002054572 4447802.0786669999361038
 ## h16v01 UL: -2223901.0393329998478293 8895604.1573329996317625 LR: -1111950.5196670000441372 7783653.6376670002937317
 ## h16v02 UL: -2223901.0393329998478293 7783653.6376670002937317 LR: -1111950.5196670000441372 6671703.1179999997839332
-
+#h09v05 -10007554.6769999992102385,3335851.5589999998919666 : -8895604.1573329996317625,4447802.0786669999361038
+#h11v03 -7783653.6376670002937317,5559752.5983330002054572 : -6671703.1179999997839332,6671703.1179999997839332
+#h11v08 -7783653.6376670002937317,0.0000000000000000 : -6671703.1179999997839332,1111950.5196670000441372
+#h11v11 -7783653.6376670002937317,-3335851.5589999998919666 : -6671703.1179999997839332,-2223901.0393329998478293
+#h17v07 -1111950.5196670000441372,1111950.5196670000441372 : 0.0000000000000000,2223901.0393329998478293
+#h20v11 2223901.0393329998478293,-3335851.5589999998919666 : 3335851.5589999998919666,-2223901.0393329998478293
+#h24v04 6671703.1179999997839332,4447802.0786669999361038 : 7783653.6376670002937317,5559752.5983330002054572
+#h26v04 8895604.1573329996317625,4447802.0786669999361038 : 10007554.6769999992102385,5559752.5983330002054572
+#h30v11 13343406.2359999995678663,-3335851.5589999998919666 : 14455356.7556669991463423,-2223901.0393329998478293
 def modis_process():
     #TODO fill in the processing chain for modis hdf products here, calling hdf_to_np etc
     pass
@@ -25,9 +33,15 @@ def viirs_process():
     pass
 
 def hdf_to_np(hdf_fname, sds):
+    #TODO close the dataset, probably using 'with'
     hdf_ds = SD(hdf_fname, SDC.READ)
     dataset_3d = hdf_ds.select(sds)
     data_np = dataset_3d[:,:]
+    return data_np
+
+def h5_to_np(h5_fname, sds):
+    h5_ds = File(h5_fname, 'r')
+    data_np = h5_ds['HDFEOS']['GRIDS']['VIIRS_Grid_BRDF']['Data Fields'][sds].value
     return data_np
 
 def mask_qa(hdf_data, hdf_qa):
@@ -94,7 +108,7 @@ def plot_data(cmb_data, labels, stats, workspace):
 
 def main():
     # Set workspace IO dirs
-    workspace = sys.argv[1] #"/muddy/data05/arthur.elmes/MCD43/MCD43A3/h12v04/"
+    workspace = sys.argv[1]
     workspace_out = workspace 
     os.chdir(workspace)
 
@@ -112,7 +126,6 @@ def main():
     sds_name_qa = "BRDF_Albedo_Band_Mandatory_Quality_nir"
     
     # Set input hdf/h5 filenames
-    #TODO replace hard coded with cl args
     tile1_fname =  sys.argv[2] #TODO maybe later add an os.path.join with the workspace here? but maybe not
     tile2_fname =  sys.argv[3]
 
@@ -138,11 +151,18 @@ def main():
 
     labels = (tile, short_name_tile1, short_name_tile2, sds_name_wsa, collection_tile1, collection_tile2)
 
+    #TODO maybe make the tile variables into a list for clarity
     # Convert both tiles' data and qa to numpy arrays for plotting
-    tile1_data_wsa = hdf_to_np(tile1_fname, sds_name_wsa)
-    tile2_data_wsa = hdf_to_np(tile2_fname, sds_name_wsa)
-    tile1_data_qa = hdf_to_np(tile1_fname, sds_name_qa)
-    tile2_data_qa = hdf_to_np(tile2_fname, sds_name_qa)
+    if sensor == "MCD":
+        tile1_data_wsa = hdf_to_np(tile1_fname, sds_name_wsa)
+        tile2_data_wsa = hdf_to_np(tile2_fname, sds_name_wsa)
+        tile1_data_qa = hdf_to_np(tile1_fname, sds_name_qa)
+        tile2_data_qa = hdf_to_np(tile2_fname, sds_name_qa)
+    elif sensor == "VNP":
+        tile1_data_wsa = h5_to_np(tile1_fname, sds_name_wsa)
+        tile2_data_wsa = h5_to_np(tile2_fname, sds_name_wsa)
+        tile1_data_qa = h5_to_np(tile1_fname, sds_name_qa)
+        tile2_data_qa = h5_to_np(tile2_fname, sds_name_qa)
 
     # Call masking function to cleanup data
     tile1_data_qa_masked = mask_qa(tile1_data_wsa, tile1_data_qa)
