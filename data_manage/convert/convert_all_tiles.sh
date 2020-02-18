@@ -8,10 +8,10 @@ file=./above_tiles.txt
 
 file_lines=`cat $file`
 echo "Start"
-for year in $(seq 2018 2019); do
+for year in $(seq 2019 2020); do
     for line in $file_lines; do
         echo ${in_dir}${year}/mcd43a/${line}
         echo ${in_dir}${year}/mcd43a/${line}/tif
-        ./hdf_to_tif_rev2.sh ${in_dir}${year}/mcd43a/${line} ${in_dir}${year}/mcd43a/${line}/tif
+        ./hdf_to_tif_mcd43.sh ${in_dir}${year}/mcd43a/${line} ${in_dir}${year}/mcd43a/${line}/tif
     done
 done
